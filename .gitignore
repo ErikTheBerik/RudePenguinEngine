@@ -1,0 +1,9 @@
+Temp/
+*.exe
+*.ilk
+*.pdb
+*.iobj
+*.ipdb
+RudePenguinEngine/Libs/
+*.user
+RudePenguinEngine/.vs/

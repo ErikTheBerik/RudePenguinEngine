@@ -1,0 +1,56 @@
+Soo.. What's a PostMaster now again? 
+	A PostMaster is a way to communicate between systems. It allows one part of the program to "subscribe" to a "message".
+	For instance, there may be several things that is supposed to happen when a unit in a game dies. The Unit would "Publish" a message, which is 
+	then sent to all the subscribers, as well as the relevant information.
+	It's more or less an evolution of the Observer pattern.
+
+Does that mean that it completely replaces the Observer pattern?
+	Nope! If there is only on subject and one observer, it's cleaner, faster and easier to debug if you just make the observer an actual observer and
+	communicate directly between the object. The PostMaster if for when there are many observers - or occasionally - many subjects.
+
+But this PostMaster looks weird! Is it stupid?
+	Au contraire, my friend! Usually messages contain a void pointer, and then you have to keep track of what kind of message it is, as well as
+	interpret the data it holds. This is prone to many mistakes and may also take precious, precious time. 
+	This PostMaster allows you to send whatever messages you want, without a care in the world!
+
+But this part of the PostMaster still looks stupid!
+	Then it probably is. Poke Nicolas until he fixes it!
+
+I want to post a message using the PostMaster. Wat do?
+	It's simple! First, create a new message struct containing the data you want to send with the message. Make sure it is inherits the "Message" struct,
+	which you can find in "Message.h". Then access the PostMaster(either directly or through the Engine main singleton, depending on how lazy we've been!),
+	and use the Publish function to send it!
+
+	an example would be:
+	#include "Message.h"
+
+	struct CoolMessage : public Message
+	{
+		float myCoolFactor;
+	}
+
+Okay, I've published the message. But no one is listening! How do I subscribe to a message?
+	To subscribe to a message, you need to inherit from its corresponding Subscriber! It should look something like this:
+
+	#include "Subscriber.h"
+	class CoolClass : public CU::Subscriber<CoolMessage>
+	{
+	public:
+		CU::NotifyResponse Notify(const CoolMessage& aMessage) override;
+	};
+
+	Then you simply define the Notify function and you are free to do whatever you want!
+
+	Also, you need to subscribe. To do this, simply type:
+	CU::Subscriber<CoolMessage>::Subscribe();
+	You can also do this in a non-default constructor of Subscriber.
+
+What does CU::NotifyResponse do?
+	CU::NotifyResponse has two states. Stop and Continue. That is, if you want to keep sending the message to the rest of the subscribers or not.
+	Usually you want to return CU::NotifyResponse::Continue, but if you want to block something(say, player movement while in a menu), you return 
+	CU::NotifyResponse::Stop.
+
+How do I make sure my subscriber receives it's message first?
+	You pay a premium for the express service!
+	Kidding, just call CU::Subscriber<CoolMessage>::ChangePriority(). Higher priority means that you are higher in the queue!
+	You can also set the priority when calling the constructor of the subscriber.
