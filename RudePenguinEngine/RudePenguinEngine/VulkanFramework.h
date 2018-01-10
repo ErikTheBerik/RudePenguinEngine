@@ -1,10 +1,24 @@
 #pragma once
+#pragma warning (disable: 4201)
 
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <vector>
 #include <CommonUtilities\Math\Vector.h>
+#include <CommonUtilities\Time\TimeManager.h>
+
+
+struct UniformBufferObject 
+{
+	glm::mat4 myModel;
+	glm::mat4 myView;
+	glm::mat4 myProj;
+};
 
 struct QueueFamilyIndices
 {
@@ -48,6 +62,8 @@ private:
 
 	void CleanupSwapChain();
 
+	void RotateCube();
+
 	bool CheckValidationLayerSupport(const std::vector<const char*>& validationLayers);
 	bool IsDeviceSuitable(const VkPhysicalDevice& aDevice);
 	bool CheckDeviceExtensionSupport(const VkPhysicalDevice& aDevice);
@@ -70,12 +86,22 @@ private:
 	void CreateSwapChain();
 	void CreateImageViews();
 	void CreateRenderPass();
+	void CreateDescriptorSetLayout();
 	void CreateGraphicsPipeline();
 	void CreateFrameBuffers();
 	void CreateCommandPool();
+
 	void CreateVertexBuffers();
+	void CreateIndexBuffers();
+	void CreateUniformBuffer();
+	void CreateDescriptorPool();
+	void CreateDescriptorSet();
+
 	void CreateCommandBuffers();
 	void CreateSemaphores();
+
+	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 	void RecreateSwapChain();
 
@@ -98,6 +124,7 @@ private:
 	std::vector<VkImageView> mySwapChainImageViews;
 
 	VkRenderPass myRenderPass;
+	VkDescriptorSetLayout myDescriptorSetLayout;
 	VkPipelineLayout myPipelineLayout;
 	VkPipeline myGraphicsPipeline;
 
@@ -106,8 +133,17 @@ private:
 	VkBuffer myVertexBuffer;
 	VkDeviceMemory myVertexBufferMemory;
 
+	VkBuffer myIndexBuffer;
+	VkDeviceMemory myIndexBufferMemory;
+
+	VkBuffer myUniformBuffer;
+	VkDeviceMemory myUniformBufferMemory;
+
 	VkCommandPool myCommandPool;
 	std::vector<VkCommandBuffer> myCommandBuffers;
+
+	VkDescriptorPool myDescriptorPool;
+	VkDescriptorSet myDescriptorSet;
 
 	VkSemaphore myImageAvailableSemaphore;
 	VkSemaphore myRenderFinishedSemaphore;
@@ -115,5 +151,9 @@ private:
 	GLFWwindow* myWindow;
 
 	Vector2<int> myWindowSize;
+
+	CU::TimeManager myTimeManager;
+
+	UniformBufferObject myUbo = {};
 };
 

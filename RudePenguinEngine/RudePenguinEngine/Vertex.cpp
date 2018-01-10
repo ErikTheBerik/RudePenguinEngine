@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "Vertex.h"
 
-Vertex::Vertex() : Vertex({ 0, 0 }, {0, 0, 0})
+Vertex::Vertex() : Vertex({ 0, 0, 0}, {0, 0, 0})
 {
 }
 
 
-Vertex::Vertex(const glm::vec2& aPos, const glm::vec3& aColor)
+Vertex::Vertex(const glm::vec3& aPos, const glm::vec3& aColor)
 {
 	myPos = aPos;
 	myColor = aColor;
@@ -31,7 +31,7 @@ std::array<VkVertexInputAttributeDescription, 2> Vertex::GetAttributeDescription
 	std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
-	attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 	attributeDescriptions[0].offset = offsetof(Vertex, myPos);
 
 	attributeDescriptions[1].binding = 0;
@@ -42,7 +42,7 @@ std::array<VkVertexInputAttributeDescription, 2> Vertex::GetAttributeDescription
 	return attributeDescriptions;
 }
 
-const glm::vec2 & Vertex::GetPosition() const
+const glm::vec3 & Vertex::GetPosition() const
 {
 	return myPos;
 }
@@ -57,7 +57,7 @@ void Vertex::SetColor(const glm::vec3& aColor)
 	myColor = aColor;
 }
 
-void Vertex::SetPos(const glm::vec2& aPos)
+void Vertex::SetPos(const glm::vec3& aPos)
 {
 	myPos = aPos;
 }

@@ -12,7 +12,6 @@
 #include "Engine.h"
 
 #pragma warning (disable: 4127)
-//staging buffer
 
 #ifdef _NFINAL
 const bool EnableValidationLayers = true;
@@ -30,11 +29,39 @@ const std::vector<const char*> DeviceExtensions =
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-std::vector<Vertex> TriangleVertices = 
+std::vector<Vertex> GlobalVertices = 
 {
-	{ { 0.0f, -0.5f },{ 1.0f, 1.0f, 1.0f } },
-	{ { 0.5f, 0.5f },{ 0.0f, 1.0f, 0.0f } },
-	{ { -0.5f, 0.5f },{ 0.0f, 0.0f, 1.0f } }
+	{ { -0.5f, -0.5f, 0.5f },{ 1.0f, 0.0f, 0.0f } },
+	{ { 0.5f, -0.5f, 0.5f },{ 0.0f, 1.0f, 0.0f } },
+	{ { 0.5f, 0.5f, 0.5f },{ 0.0f, 0.0f, 1.0f } },
+	{ { -0.5f, 0.5f, 0.5f },{ 1.0f, 1.0f, 1.0f } },
+
+	{ { -0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f } },
+	{ { 0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f } },
+	{ { 0.5f, 0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f } },
+	{ { -0.5f, 0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f } }
+};
+
+const std::vector<uint32_t> GlobalIndices = 
+{
+	// front
+	0, 1, 2,
+	2, 3, 0,
+	// top
+	1, 5, 6,
+	6, 2, 1,
+	// back
+	7, 6, 5,
+	5, 4, 7,
+	// bottom
+	4, 0, 3,
+	3, 7, 4,
+	// left
+	4, 5, 1,
+	1, 0, 4,
+	// right
+	3, 2, 6,
+	6, 7, 3,
 };
 
 VulkanFramework::VulkanFramework()
@@ -55,6 +82,12 @@ void VulkanFramework::Init(const Vector2<int>& aWindowSize, const bool aFullscre
 	glfwInit();
 	CreateWindow(aWindowSize, aFullscreen);
 
+	
+	myUbo.myModel = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.5f, 0.3f, 0.0f));
+	myUbo.myView = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	myUbo.myProj = glm::perspective(glm::radians(45.0f), mySwapChainExtent.width / (float)mySwapChainExtent.height, 0.1f, 10.0f);
+	myUbo.myProj[1][1] *= -1;
+
 	CreateVulkanInstance();
 	SetupDebugCallback();
 	CreateVulkanSurface();
@@ -63,10 +96,17 @@ void VulkanFramework::Init(const Vector2<int>& aWindowSize, const bool aFullscre
 	CreateSwapChain();
 	CreateImageViews();
 	CreateRenderPass();
+	CreateDescriptorSetLayout();
 	CreateGraphicsPipeline();
 	CreateFrameBuffers();
 	CreateCommandPool();
+
 	CreateVertexBuffers();
+	CreateIndexBuffers();
+	CreateUniformBuffer();
+	CreateDescriptorPool();
+	CreateDescriptorSet();
+
 	CreateCommandBuffers();
 	CreateSemaphores();
 }
@@ -403,6 +443,26 @@ void VulkanFramework::CreateRenderPass()
 	renderPassInfo.pDependencies = &dependency;
 }
 
+void VulkanFramework::CreateDescriptorSetLayout()
+{
+	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &uboLayoutBinding;
+
+	if (vkCreateDescriptorSetLayout(myLogicDevice, &layoutInfo, nullptr, &myDescriptorSetLayout) != VK_SUCCESS) 
+	{
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
+}
+
 void VulkanFramework::CreateGraphicsPipeline()
 {
 	std::vector<char> vertShaderCode, fragShaderCode;
@@ -468,7 +528,7 @@ void VulkanFramework::CreateGraphicsPipeline()
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer.lineWidth = 1.0f;
 	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f; // Optional
 	rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -527,8 +587,8 @@ void VulkanFramework::CreateGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 0; // Optional
-	pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+	pipelineLayoutInfo.setLayoutCount = 1; // Optional
+	pipelineLayoutInfo.pSetLayouts = &myDescriptorSetLayout; // Optional
 	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	pipelineLayoutInfo.pPushConstantRanges = 0; // Optional
 
@@ -610,36 +670,103 @@ void VulkanFramework::CreateCommandPool()
 
 void VulkanFramework::CreateVertexBuffers()
 {
-	VkBufferCreateInfo bufferInfo = {};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = sizeof(TriangleVertices[0]) * TriangleVertices.size();
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	VkDeviceSize bufferSize = sizeof(GlobalVertices[0]) * GlobalVertices.size();
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
 
-	if (vkCreateBuffer(myLogicDevice, &bufferInfo, nullptr, &myVertexBuffer) != VK_SUCCESS) 
-	{
-		throw std::runtime_error("failed to create vertex buffer!");
-	}
-
-	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(myLogicDevice, myVertexBuffer, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	if (vkAllocateMemory(myLogicDevice, &allocInfo, nullptr, &myVertexBufferMemory) != VK_SUCCESS) 
-	{
-		throw std::runtime_error("failed to allocate vertex buffer memory!");
-	}
-
-	vkBindBufferMemory(myLogicDevice, myVertexBuffer, myVertexBufferMemory, 0);
+	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(myLogicDevice, myVertexBufferMemory, 0, bufferInfo.size, 0, &data);
-	memcpy(data, TriangleVertices.data(), (size_t)bufferInfo.size);
-	vkUnmapMemory(myLogicDevice, myVertexBufferMemory);
+	vkMapMemory(myLogicDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, GlobalVertices.data(), (size_t)bufferSize);
+	vkUnmapMemory(myLogicDevice, stagingBufferMemory);
+
+	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, myVertexBuffer, myVertexBufferMemory);
+
+	CopyBuffer(stagingBuffer, myVertexBuffer, bufferSize);
+
+	vkDestroyBuffer(myLogicDevice, stagingBuffer, nullptr);
+	vkFreeMemory(myLogicDevice, stagingBufferMemory, nullptr);
+}
+
+void VulkanFramework::CreateIndexBuffers()
+{
+	VkDeviceSize bufferSize = sizeof(GlobalIndices[0]) * GlobalIndices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(myLogicDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, GlobalIndices.data(), (size_t)bufferSize);
+	vkUnmapMemory(myLogicDevice, stagingBufferMemory);
+
+	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, myIndexBuffer, myIndexBufferMemory);
+
+	CopyBuffer(stagingBuffer, myIndexBuffer, bufferSize);
+
+	vkDestroyBuffer(myLogicDevice, stagingBuffer, nullptr);
+	vkFreeMemory(myLogicDevice, stagingBufferMemory, nullptr);
+}
+
+void VulkanFramework::CreateUniformBuffer()
+{
+	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+	CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, myUniformBuffer, myUniformBufferMemory);
+}
+
+void VulkanFramework::CreateDescriptorPool()
+{
+	VkDescriptorPoolSize poolSize = {};
+	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSize.descriptorCount = 1;
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = 1;
+	poolInfo.pPoolSizes = &poolSize;
+	poolInfo.maxSets = 1;
+
+	if (vkCreateDescriptorPool(myLogicDevice, &poolInfo, nullptr, &myDescriptorPool) != VK_SUCCESS) 
+	{
+		throw std::runtime_error("failed to create descriptor pool!");
+	}
+}
+
+void VulkanFramework::CreateDescriptorSet()
+{
+	VkDescriptorSetLayout layouts[] = { myDescriptorSetLayout };
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = myDescriptorPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = layouts;
+
+	if (vkAllocateDescriptorSets(myLogicDevice, &allocInfo, &myDescriptorSet) != VK_SUCCESS) 
+	{
+		throw std::runtime_error("failed to allocate descriptor set!");
+	}
+
+	VkDescriptorBufferInfo bufferInfo = {};
+	bufferInfo.buffer = myUniformBuffer;
+	bufferInfo.offset = 0;
+	bufferInfo.range = sizeof(UniformBufferObject);
+
+	VkWriteDescriptorSet descriptorWrite = {};
+	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrite.dstSet = myDescriptorSet;
+	descriptorWrite.dstBinding = 0;
+	descriptorWrite.dstArrayElement = 0;
+
+	descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	descriptorWrite.descriptorCount = 1;
+
+	descriptorWrite.pBufferInfo = &bufferInfo;
+	descriptorWrite.pImageInfo = nullptr; // Optional
+	descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+	vkUpdateDescriptorSets(myLogicDevice, 1, &descriptorWrite, 0, nullptr);
 }
 
 void VulkanFramework::CreateCommandBuffers()
@@ -673,7 +800,7 @@ void VulkanFramework::CreateCommandBuffers()
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = mySwapChainExtent;
 
-		VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+		VkClearValue clearColor = { 0.53f, 0.94f, 0.64f, 1.0f };
 		renderPassInfo.clearValueCount = 1;
 		renderPassInfo.pClearValues = &clearColor;
 
@@ -685,7 +812,11 @@ void VulkanFramework::CreateCommandBuffers()
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(myCommandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-		vkCmdDraw(myCommandBuffers[i], static_cast<uint32_t>(TriangleVertices.size()), 1, 0, 0);
+		vkCmdBindIndexBuffer(myCommandBuffers[i], myIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdBindDescriptorSets(myCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, myPipelineLayout, 0, 1, &myDescriptorSet, 0, nullptr);
+
+		vkCmdDrawIndexed(myCommandBuffers[i], static_cast<uint32_t>(GlobalIndices.size()), 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(myCommandBuffers[i]);
 
@@ -706,6 +837,73 @@ void VulkanFramework::CreateSemaphores()
 	{
 		throw std::runtime_error("failed to create semaphores!");
 	}
+}
+
+void VulkanFramework::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+{
+	VkBufferCreateInfo bufferInfo = {};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateBuffer(myLogicDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create vertex buffer!");
+	}
+
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(myLogicDevice, buffer, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+
+	if (vkAllocateMemory(myLogicDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to allocate vertex buffer memory!");
+	}
+
+	vkBindBufferMemory(myLogicDevice, buffer, bufferMemory, 0);
+}
+
+void VulkanFramework::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+	//Should make pool. Use: VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
+	
+	VkCommandBufferAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = myCommandPool;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(myLogicDevice, &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+	VkBufferCopy copyRegion = {};
+	copyRegion.srcOffset = 0; // Optional
+	copyRegion.dstOffset = 0; // Optional
+	copyRegion.size = size;
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(myGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(myGraphicsQueue); //Use fence to schedule multiple transfers simultaneously
+
+	vkFreeCommandBuffers(myLogicDevice, myCommandPool, 1, &commandBuffer);
 }
 
 void VulkanFramework::RecreateSwapChain()
@@ -756,12 +954,36 @@ void VulkanFramework::CleanupSwapChain()
 	vkDestroySwapchainKHR(myLogicDevice, mySwapChain, nullptr);
 }
 
+void VulkanFramework::RotateCube()
+{	
+	myUbo.myModel = glm::rotate(myUbo.myModel, myTimeManager.GetDeltaTime().GetSeconds() * glm::radians(-90.0f), glm::vec3(0.5f, 0.3f, 0.2f));
+
+	UniformBufferObject ubo = {};
+	ubo.myModel = myUbo.myModel;
+	ubo.myView = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.myProj = glm::perspective(glm::radians(45.0f), mySwapChainExtent.width / (float)mySwapChainExtent.height, 0.1f, 10.0f);
+	ubo.myProj[1][1] *= -1;
+
+	void* data;
+	vkMapMemory(myLogicDevice, myUniformBufferMemory, 0, sizeof(ubo), 0, &data);
+	memcpy(data, &ubo, sizeof(ubo));
+	vkUnmapMemory(myLogicDevice, myUniformBufferMemory);
+}
+
 void VulkanFramework::Cleanup()
 {
 	CleanupSwapChain();
 
+	vkDestroyDescriptorPool(myLogicDevice, myDescriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(myLogicDevice, myDescriptorSetLayout, nullptr);
+
+	vkDestroyBuffer(myLogicDevice, myUniformBuffer, nullptr);
+	vkFreeMemory(myLogicDevice, myUniformBufferMemory, nullptr);
+
 	vkDestroyBuffer(myLogicDevice, myVertexBuffer, nullptr);
 	vkFreeMemory(myLogicDevice, myVertexBufferMemory, nullptr);
+	vkDestroyBuffer(myLogicDevice, myIndexBuffer, nullptr);
+	vkFreeMemory(myLogicDevice, myIndexBufferMemory, nullptr);
 
 	vkDestroySemaphore(myLogicDevice, myRenderFinishedSemaphore, nullptr);
 	vkDestroySemaphore(myLogicDevice, myImageAvailableSemaphore, nullptr);
@@ -779,6 +1001,10 @@ void VulkanFramework::Cleanup()
 
 void VulkanFramework::Update()
 {
+	myTimeManager.UpdateAllTimers();
+
+	RotateCube();
+
 	glfwPollEvents();
 	DrawFrame();
 
