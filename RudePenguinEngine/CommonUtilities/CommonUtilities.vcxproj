@@ -358,6 +358,7 @@
     <ClInclude Include="Math\Vector2.h" />
     <ClInclude Include="Math\Vector3.h" />
     <ClInclude Include="Math\Vector4.h" />
+    <ClInclude Include="Utility\stb_image.h" />
     <ClInclude Include="Utility\Trie\Trie.h" />
     <ClInclude Include="Utility\XboxControllerWrapper.h" />
     <ClInclude Include="Threading\ThreadHelper.h" />

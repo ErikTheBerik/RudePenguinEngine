@@ -91,6 +91,10 @@ private:
 	void CreateFrameBuffers();
 	void CreateCommandPool();
 
+	void CreateTextureImage();
+	void CreateTextureImageView();
+	void CreateTextureSampler();
+
 	void CreateVertexBuffers();
 	void CreateIndexBuffers();
 	void CreateUniformBuffer();
@@ -100,12 +104,20 @@ private:
 	void CreateCommandBuffers();
 	void CreateSemaphores();
 
+	void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 	void RecreateSwapChain();
 
 	void CreateWindow(const Vector2<int>& aWindowSize, bool aShouldBeFullscreen = false);
+
+	VkCommandBuffer BeginSingleTimeCommands();
+	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+	VkImageView CreateImageView(VkImage image, VkFormat format);
 
 private:
 	VkInstance myVulkanInstance;
@@ -138,6 +150,11 @@ private:
 
 	VkBuffer myUniformBuffer;
 	VkDeviceMemory myUniformBufferMemory;
+
+	VkImage myTextureImage;
+	VkDeviceMemory myTextureImageMemory;
+	VkImageView myTextureImageView;
+	VkSampler myTextureSampler;
 
 	VkCommandPool myCommandPool;
 	std::vector<VkCommandBuffer> myCommandBuffers;
