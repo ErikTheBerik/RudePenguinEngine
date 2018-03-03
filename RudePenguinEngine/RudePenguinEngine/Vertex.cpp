@@ -1,14 +1,15 @@
 #include "stdafx.h"
 #include "Vertex.h"
 
-Vertex::Vertex() : Vertex({ 0, 0, 0}, {0, 0, 0})
+Vertex::Vertex() : Vertex({ 0, 0, 0 }, { 0, 0, 0 }, { 0, 0 })
 {
 }
 
 
-Vertex::Vertex(const glm::vec3& aPos, const glm::vec3& aColor)
+Vertex::Vertex(const glm::vec3& aPos, const glm::vec3& aColor, const glm::vec2& aCoord)
 {
 	myPos = aPos;
+	myTexCoord = aCoord;
 	myColor = aColor;
 }
 
@@ -26,9 +27,9 @@ VkVertexInputBindingDescription Vertex::GetBindingDescription()
 	return bindingDescription;
 }
 
-std::array<VkVertexInputAttributeDescription, 2> Vertex::GetAttributeDescriptions()
+std::array<VkVertexInputAttributeDescription, 3> Vertex::GetAttributeDescriptions()
 {
-	std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
+	std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
 	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -39,12 +40,22 @@ std::array<VkVertexInputAttributeDescription, 2> Vertex::GetAttributeDescription
 	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 	attributeDescriptions[1].offset = offsetof(Vertex, myColor);
 
+	attributeDescriptions[2].binding = 0;
+	attributeDescriptions[2].location = 2;
+	attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[2].offset = offsetof(Vertex, myTexCoord);
+
 	return attributeDescriptions;
 }
 
 const glm::vec3 & Vertex::GetPosition() const
 {
 	return myPos;
+}
+
+const glm::vec2& Vertex::GetTextureCoordinates() const
+{
+	return myTexCoord; 
 }
 
 const glm::vec3& Vertex::GetColor() const
@@ -60,4 +71,9 @@ void Vertex::SetColor(const glm::vec3& aColor)
 void Vertex::SetPos(const glm::vec3& aPos)
 {
 	myPos = aPos;
+}
+
+void Vertex::SetTexCoord(const glm::vec2& aCoord)
+{
+	myTexCoord = aCoord;
 }
