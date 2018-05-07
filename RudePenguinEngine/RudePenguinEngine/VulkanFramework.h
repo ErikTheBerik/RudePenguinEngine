@@ -5,6 +5,7 @@
 #include "GLFW/glfw3.h"
 
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -64,6 +65,9 @@ private:
 
 	void RotateCube();
 
+	VkFormat FindDepthFormat();
+	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	bool HasStencilComponent(VkFormat format);
 	bool CheckValidationLayerSupport(const std::vector<const char*>& validationLayers);
 	bool IsDeviceSuitable(const VkPhysicalDevice& aDevice);
 	bool CheckDeviceExtensionSupport(const VkPhysicalDevice& aDevice);
@@ -91,6 +95,7 @@ private:
 	void CreateFrameBuffers();
 	void CreateCommandPool();
 
+	void CreateDepthResources();
 	void CreateTextureImage();
 	void CreateTextureImageView();
 	void CreateTextureSampler();
@@ -117,7 +122,7 @@ private:
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-	VkImageView CreateImageView(VkImage image, VkFormat format);
+	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 private:
 	VkInstance myVulkanInstance;
@@ -156,6 +161,10 @@ private:
 	VkImageView myTextureImageView;
 	VkSampler myTextureSampler;
 
+	VkImage myDepthImage;
+	VkDeviceMemory myDepthImageMemory;
+	VkImageView myDepthImageView;
+
 	VkCommandPool myCommandPool;
 	std::vector<VkCommandBuffer> myCommandBuffers;
 
@@ -173,4 +182,3 @@ private:
 
 	UniformBufferObject myUbo = {};
 };
-
