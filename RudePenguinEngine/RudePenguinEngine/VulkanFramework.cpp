@@ -85,11 +85,17 @@ void VulkanFramework::Init(const Vector2<int>& aWindowSize, const bool aFullscre
 	glfwInit();
 	CreateWindow(aWindowSize, aFullscreen);
 
-	
-	myUbo.myModel = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.5f, 0.3f, 0.0f));
-	myUbo.myView = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	myUbo.myProj = glm::perspective(glm::radians(45.0f), mySwapChainExtent.width / (float)mySwapChainExtent.height, 0.1f, 10.0f);
-	myUbo.myProj[1][1] *= -1;
+	if (glfwVulkanSupported())
+	{
+		std::cout << "vulkan supported !" << std::endl;
+
+	}
+	else
+	{
+		std::cout << "vulkan NOT supported !" << std::endl;
+		system("Pause");
+		return;
+	}
 
 	CreateVulkanInstance();
 	SetupDebugCallback();
@@ -113,6 +119,11 @@ void VulkanFramework::Init(const Vector2<int>& aWindowSize, const bool aFullscre
 	CreateUniformBuffer();
 	CreateDescriptorPool();
 	CreateDescriptorSet();
+
+	myUbo.myModel = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.5f, 0.3f, 0.0f));
+	myUbo.myView = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	myUbo.myProj = glm::perspective(glm::radians(45.0f), (float)mySwapChainExtent.height ? mySwapChainExtent.width / (float)mySwapChainExtent.height : 0.0f, 0.1f, 10.0f);
+	myUbo.myProj[1][1] *= -1;
 
 	CreateCommandBuffers();
 	CreateSemaphores();
