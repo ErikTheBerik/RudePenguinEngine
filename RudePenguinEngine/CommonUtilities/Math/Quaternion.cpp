@@ -1,6 +1,6 @@
 #include "Quaternion.h"
 #include <iostream>
-#include "..\Debug\DL_Assert.h"
+#include <..\Debug\DL_Assert.h>
 Quaternion::Quaternion(float aRotationX, float aRotationY, float aRotationZ, float aRotationAmount, bool aNormalize) 
 	: myRotation(aRotationX, aRotationY, aRotationZ), myRotationAmount(aRotationAmount)
 {

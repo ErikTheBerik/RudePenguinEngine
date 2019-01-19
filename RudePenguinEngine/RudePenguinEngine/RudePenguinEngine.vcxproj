@@ -408,13 +408,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="GLFW\glfw3.h" />
+    <ClInclude Include="GLFW\glfw3native.h" />
+    <ClInclude Include="VulkanFramework\Vertex.h" />
+    <ClInclude Include="VulkanFramework\VulkanFramework.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Vertex.h" />
-    <ClInclude Include="VulkanFramework.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="VulkanFramework\Vertex.cpp" />
+    <ClCompile Include="VulkanFramework\VulkanFramework.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -425,8 +429,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Final|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Retail|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Vertex.cpp" />
-    <ClCompile Include="VulkanFramework.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonUtilities\CommonUtilities.vcxproj">

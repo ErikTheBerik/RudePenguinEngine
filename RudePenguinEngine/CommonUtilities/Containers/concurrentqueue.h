@@ -67,9 +67,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <type_traits>
-#pragma warning (disable: 4244)
 #include <algorithm>
-#pragma warning (default: 4244)
 #include <utility>
 #include <limits>
 #include <climits>		// for CHAR_BIT

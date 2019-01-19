@@ -47,6 +47,7 @@ private:
 	bool myShouldRun;
 
 	VulkanFramework* myVulkanFramework;
+	CommonUtilities::
 
 };
 

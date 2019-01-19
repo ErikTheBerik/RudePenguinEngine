@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Engine.h"
 
-#include "VulkanFramework.h"
+#include "VulkanFramework\VulkanFramework.h"
 
 #include <CommonUtilities\Time\TimeManager.h>
 #include <CommonUtilities\Math\matrix44.h>

@@ -1,7 +1,5 @@
 #include "Trie.h"
-#pragma warning (disable: 4244)
 #include <algorithm>
-#pragma warning (default: 4244)
 #include <cctype>
 
 namespace CommonUtilities
@@ -75,7 +73,7 @@ namespace CommonUtilities
 				if (currentChar == first)
 				{
 					hasAny = true;
-					if (currentWordIndex + 1 < (int)aWord.size())
+					if (currentWordIndex + 1 < aWord.size())
 					{
 						first = lower.at(currentWordIndex + 1);
 						int j = 0;
@@ -93,7 +91,7 @@ namespace CommonUtilities
 									currentChar = currentNode->myChar;
 									currentChar = static_cast<char>(std::tolower(currentChar));
 
-									if (currentWordIndex + 1 < (int)aWord.size())
+									if (currentWordIndex + 1 < aWord.size())
 									{
 										first = lower.at(currentWordIndex + 1);
 										currentWordIndex++;
