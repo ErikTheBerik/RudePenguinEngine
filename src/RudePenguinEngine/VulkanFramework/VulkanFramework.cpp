@@ -80,7 +80,7 @@ VulkanFramework::~VulkanFramework()
 	Cleanup();
 }
 
-void VulkanFramework::Init(const Vector2<int>& aWindowSize, const bool aFullscreen)
+void VulkanFramework::Init(const glm::vec2& aWindowSize, const bool aFullscreen)
 {
 	myWindowSize = aWindowSize;
 
@@ -1127,7 +1127,7 @@ void VulkanFramework::RecreateSwapChain()
 	CreateCommandBuffers();
 }
 
-void VulkanFramework::CreateWindow(const Vector2<int>& aWindowSize, bool aShouldBeFullscreen)
+void VulkanFramework::CreateWindow(const glm::vec2& aWindowSize, bool aShouldBeFullscreen)
 {
 	aShouldBeFullscreen;
 

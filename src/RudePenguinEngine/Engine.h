@@ -1,11 +1,6 @@
 #pragma once
 #include <functional>
-
-template<typename TYPE>
-class Matrix44;
-
-template<typename TYPE>
-class Vector2;
+#include <CommonUtilities/glm/vec2.hpp>
 
 class VulkanFramework;
 
@@ -18,7 +13,7 @@ public:
 	static bool IsEngineCreated();
 	static void Create();
 
-	bool Init(const Vector2<int>& aWindowSize, const bool aFullscreen, std::function<void()> aGameUpdateFunction = nullptr, std::function<void()> aGameDrawFunction = nullptr, std::function<void()> aGameDebugFunction = nullptr);
+	bool Init(const glm::vec2& aWindowSize, const bool aFullscreen, std::function<void()> aGameUpdateFunction = nullptr, std::function<void()> aGameDrawFunction = nullptr, std::function<void()> aGameDebugFunction = nullptr);
 	
 	void StartThreads();
 	void StartEngine();
@@ -47,7 +42,6 @@ private:
 	bool myShouldRun;
 
 	VulkanFramework* myVulkanFramework;
-	CommonUtilities::
 
 };
 

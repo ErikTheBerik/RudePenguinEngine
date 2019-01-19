@@ -6,13 +6,13 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <CommonUtilities/glm/glm.hpp>
+#include <CommonUtilities/glm/gtc/matrix_transform.hpp>
 
 #include "Vertex.h"
 
 #include <vector>
-#include <CommonUtilities\Math\Vector.h>
+#include <CommonUtilities\glm\vec2.hpp>
 #include <CommonUtilities\Time\TimeManager.h>
 
 const std::string MODEL_PATH = "models/chalet.obj";
@@ -50,7 +50,7 @@ public:
 	VulkanFramework();
 	~VulkanFramework();
 
-	void Init(const Vector2<int>& aWindowSize, const bool aFullscreen);
+	void Init(const glm::vec2& aWindowSize, const bool aFullscreen);
 	void Cleanup();
 
 	void Update();
@@ -123,7 +123,7 @@ private:
 
 	void RecreateSwapChain();
 
-	void CreateWindow(const Vector2<int>& aWindowSize, bool aShouldBeFullscreen = false);
+	void CreateWindow(const glm::vec2& aWindowSize, bool aShouldBeFullscreen = false);
 
 	VkCommandBuffer BeginSingleTimeCommands();
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -185,7 +185,7 @@ private:
 
 	GLFWwindow* myWindow;
 
-	Vector2<int> myWindowSize;
+	glm::vec2 myWindowSize;
 
 	CU::TimeManager myTimeManager;
 

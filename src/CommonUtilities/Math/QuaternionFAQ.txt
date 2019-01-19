@@ -1,9 +1,0 @@
-What's a quaternion?
-	a quaternion describes an objects rotation.
-
-So why use a quaternion in place of a x, y and z rotation?
-	Quaternion solves the problem with gimbal lock!
-	It also makes interpolation between two orientations look a bit smoother.
-
-But how do I use it?
-	Just create it, and then use its rotate functions! Once it's rotated, you can use the GenerateMatrix function to get a matrix over the orientation.

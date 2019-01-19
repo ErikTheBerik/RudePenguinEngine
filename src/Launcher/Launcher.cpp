@@ -1,11 +1,11 @@
 #include "RudePenguinEngine\Engine.h"
-#include <CommonUtilities\Math\Vector.h>
+#include <CommonUtilities\glm\vec2.hpp>
 
 int main(/*const int argc, const char *argv[]*/)
 {
 	Engine::Create();
 
-	Vector2i windowSize(800, 600);
+	glm::vec2 windowSize(800, 600);
 	if (Engine::GetInstance().Init(windowSize, true) == false)
 	{
 		system("pause");

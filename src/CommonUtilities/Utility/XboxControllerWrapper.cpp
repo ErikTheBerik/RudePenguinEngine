@@ -82,7 +82,7 @@ bool XboxControllerWrapper::IsConnected()
 	return false;
 }
 
-const Vector2f XboxControllerWrapper::GetLeftThumbStickDirection()
+const glm::vec2 XboxControllerWrapper::GetLeftThumbStickDirection()
 {
 	float LX = myInputState.Gamepad.sThumbLX;
 	float LY = myInputState.Gamepad.sThumbLY;
@@ -91,7 +91,7 @@ const Vector2f XboxControllerWrapper::GetLeftThumbStickDirection()
 
 	if (magnitude == 0)
 	{
-		return Vector2f::Zero;
+		return glm::vec2(0.0f, 0.0f);
 	}
 
 	float normalizedLX = LX / magnitude;
@@ -117,7 +117,7 @@ const Vector2f XboxControllerWrapper::GetLeftThumbStickDirection()
 	}
 
 
-	return Vector2f(normalizedLX, normalizedLY) * normalizedMagnitude;
+	return glm::vec2(normalizedLX, normalizedLY) * normalizedMagnitude;
 }
 
 bool XboxControllerWrapper::GetButtonPressed(eXboxButtons aButton)
@@ -254,7 +254,7 @@ void XboxControllerWrapper::StopVibrate()
 	Vibrate(0.f, 0.f);
 }
 
-const Vector2f XboxControllerWrapper::GetRightThumbStickDirection()
+const glm::vec2 XboxControllerWrapper::GetRightThumbStickDirection()
 {
 	float RX = static_cast<float>(myInputState.Gamepad.sThumbRX);
 	float RY = static_cast<float>(myInputState.Gamepad.sThumbRY);
@@ -284,5 +284,5 @@ const Vector2f XboxControllerWrapper::GetRightThumbStickDirection()
 	}
 
 
-	return Vector2f(normalizedRX, normalizedRY) * normalizedMagnitude;
+	return glm::vec2(normalizedRX, normalizedRY) * normalizedMagnitude;
 }

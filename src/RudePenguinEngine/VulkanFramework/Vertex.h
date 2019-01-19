@@ -1,11 +1,11 @@
 #pragma once
 #pragma warning (disable: 4201)
-#include <glm/glm.hpp>
+#include <CommonUtilities/glm/glm.hpp>
 #include "vulkan/vulkan.h"
 #include <array>
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
+#include <CommonUtilities/glm/gtx/hash.hpp>
 
 class Vertex
 {

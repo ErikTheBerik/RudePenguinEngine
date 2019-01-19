@@ -1,7 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <Xinput.h>
-#include "../Math/Vector2.h"
+#include "../glm/vec2.hpp"
 #include <vector>
 #pragma comment (lib, "XInput9_1_0.lib")
 #pragma comment (lib, "XInput.lib")
@@ -55,8 +55,8 @@ public:
 	void Update();
 	XINPUT_STATE GetInputState();
 	bool IsConnected();
-	const Vector2f GetRightThumbStickDirection();
-	const Vector2f GetLeftThumbStickDirection();
+	const glm::vec2 GetRightThumbStickDirection();
+	const glm::vec2 GetLeftThumbStickDirection();
 	bool GetButtonPressed(eXboxButtons aButton);
 	bool GetButtonPressed(int aButton);
 

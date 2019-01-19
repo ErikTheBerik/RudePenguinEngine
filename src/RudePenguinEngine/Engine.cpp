@@ -4,7 +4,7 @@
 #include "VulkanFramework\VulkanFramework.h"
 
 #include <CommonUtilities\Time\TimeManager.h>
-#include <CommonUtilities\Math\matrix44.h>
+#include <CommonUtilities\glm\mat4x4.hpp>
 #include <CommonUtilities\Threading\WrappedThread\WrappedThread.h>
 
 Engine* Engine::ourInstance = nullptr;
@@ -27,7 +27,7 @@ void Engine::Create()
 	}
 }
 
-bool Engine::Init(const Vector2<int>& aWindowSize, const bool aFullscreen, std::function<void()> aGameUpdateFunction /*= nullptr*/, std::function<void()> aGameDrawFunction /*= nullptr*/, std::function<void()> aGameDebugFunction /*= nullptr*/)
+bool Engine::Init(const glm::vec2& aWindowSize, const bool aFullscreen, std::function<void()> aGameUpdateFunction /*= nullptr*/, std::function<void()> aGameDrawFunction /*= nullptr*/, std::function<void()> aGameDebugFunction /*= nullptr*/)
 {
 	myGamePaused = false;
 	myGameUpdateFunction = aGameUpdateFunction;
