@@ -1134,7 +1134,7 @@ void VulkanFramework::CreateWindow(const glm::vec2& aWindowSize, bool aShouldBeF
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-	myWindow = glfwCreateWindow(aWindowSize.x, aWindowSize.y, "Game Title", nullptr, nullptr);
+	myWindow = glfwCreateWindow(static_cast<int>(aWindowSize.x), static_cast<int>(aWindowSize.y), "Game Title", nullptr, nullptr);
 
 	glfwSetWindowUserPointer(myWindow, this);
 	glfwSetWindowSizeCallback(myWindow, VulkanFramework::OnWindowResized);

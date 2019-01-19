@@ -15,6 +15,8 @@
 
 namespace glm
 {
+#pragma warning(push)
+#pragma warning(disable: 4201)
 	template <typename T, precision P = defaultp>
 	struct tvec4
 	{
@@ -270,6 +272,8 @@ namespace glm
 		template <typename U>
 		GLM_FUNC_DECL tvec4<T, P> & operator>>=(tvec4<U, P> const & v);
 	};
+
+#pragma warning(pop)
 
 	// -- Unary operators --
 

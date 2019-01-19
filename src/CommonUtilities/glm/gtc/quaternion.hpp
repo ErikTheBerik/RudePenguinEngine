@@ -29,7 +29,8 @@ namespace glm
 {
 	/// @addtogroup gtc_quaternion
 	/// @{
-
+#pragma warning(push)
+#pragma warning(disable: 4201)
 	template <typename T, precision P = defaultp>
 	struct tquat
 	{
@@ -130,6 +131,8 @@ namespace glm
 		template <typename U>
 		GLM_FUNC_DECL tquat<T, P> & operator/=(U s);
 	};
+
+#pragma warning(pop)
 
 	// -- Unary bit operators --
 
