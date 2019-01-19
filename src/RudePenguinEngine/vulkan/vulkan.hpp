@@ -16,8 +16,10 @@
 
 #ifndef VULKAN_HPP
 #define VULKAN_HPP
-
+#pragma warning(push)
+#pragma warning (disable: 4244)
 #include <algorithm>
+#pragma warning(pop)
 #include <array>
 #include <cassert>
 #include <cstddef>
