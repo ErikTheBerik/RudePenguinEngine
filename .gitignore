@@ -4,6 +4,6 @@ Temp/
 *.pdb
 *.iobj
 *.ipdb
-RudePenguinEngine/Libs/
+src/Libs/
 *.user
-RudePenguinEngine/.vs/
+src/.vs/
